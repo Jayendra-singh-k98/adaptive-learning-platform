@@ -4,7 +4,7 @@ import Topic from "@/db/models/Topic";
 import StudentTopicProgress from "@/db/models/StudentTopicProgress";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
+import mongoose from "mongoose";
 export async function GET(req, { params }) {
 
   try {
@@ -18,7 +18,17 @@ export async function GET(req, { params }) {
     const { courseId } = await params;
 
     // 1. Find course by slug
-    const course = await Course.findOne({ slug: courseId });
+    let course;
+
+    if (mongoose.Types.ObjectId.isValid(courseId)) {
+      // called with ObjectId
+      course = await Course.findById(courseId);
+    } else {
+      // called with slug
+      course = await Course.findOne({ slug: courseId });
+    }
+
+
 
     if (!course) {
       return Response.json({

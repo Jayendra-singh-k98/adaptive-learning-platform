@@ -46,8 +46,8 @@ export const authOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      // First time login → attach role
       if (user) {
+        token.id = user.id; 
         token.role = user.role;
       }
       return token;
@@ -55,6 +55,7 @@ export const authOptions = {
 
     async session({ session, token }) {
       // Expose role inside session
+      session.user.id = token.id; 
       session.user.role = token.role;
       return session;
     },

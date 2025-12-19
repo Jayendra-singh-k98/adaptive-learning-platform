@@ -3,30 +3,66 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
+import { useRef } from "react";
+
+
 
 const QuizResult = () => {
   const { topicId } = useParams();
   const search = useSearchParams();
   const courseId = search.get("courseId");   // ✅ Correct
+  const [topicTitle, setTopicTitle] = useState("");
+
 
   const [result, setResult] = useState(null);
   const [questions, setQuestions] = useState([]);
+  const hasSubmitted = useRef(false);
 
   useEffect(() => {
     const key = `quiz_result_${topicId}`;
     const saved = sessionStorage.getItem(key);
-
-    if (saved) {
-      const json = JSON.parse(saved);
-      setResult({
+  
+    // ⛔ first validate data
+    if (!saved || !courseId) return;
+  
+    // ⛔ prevent double execution (React Strict Mode)
+    if (hasSubmitted.current) return;
+    hasSubmitted.current = true;
+  
+    const json = JSON.parse(saved);
+  
+    const computedResult = {
+      score: json.score,
+      total: json.total,
+      percentage: Math.round((json.score / json.total) * 100),
+      passed: json.score >= Math.ceil(json.total / 2)
+    };
+  
+    // 1️⃣ UI state
+    setResult(computedResult);
+    setQuestions(json.details);
+  
+    // 2️⃣ DB update (single time only)
+    fetch("/api/topics/sumbit-quiz", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        courseId,
+        topicId,
         score: json.score,
-        total: json.total,
-        percentage: Math.round((json.score / json.total) * 100),
-        passed: json.score >= Math.ceil(json.total / 2)
-      });
-      setQuestions(json.details);
-    }
-  }, [topicId]);
+        total: json.total
+      })
+    }).catch(console.error);
+  
+    // 3️⃣ Topic title
+    fetch(`/api/quizs/${topicId}`)
+      .then(res => res.json())
+      .then(data => setTopicTitle(data.title))
+      .catch(console.error);
+  
+  }, [topicId, courseId]);
+  
+
 
   if (!result) {
     return <div className="p-10 text-center text-gray-600">No quiz data found.</div>;
@@ -38,7 +74,7 @@ const QuizResult = () => {
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Quiz Results</h1>
-          <p className="text-gray-600 mt-2">Topic {topicId}</p>
+          <p className="text-gray-600 mt-2">Topic: {topicTitle || topicId }</p>
         </div>
 
         {/* Score Card */}

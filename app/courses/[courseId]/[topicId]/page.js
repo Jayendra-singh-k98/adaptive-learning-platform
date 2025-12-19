@@ -55,12 +55,12 @@ export default function TopicLearning() {
   }, [courseId, topicId, session]);
 
   if (status === "loading" || loading) {
-    return <div className="p-8 text-center">Loading...</div>;
+    return <div className="p-20 text-center">Loading...</div>;
   }
 
   if (status !== "authenticated") {
     return (
-      <div className="p-8 text-center">
+      <div className="p-20 text-center">
         <p className="text-red-600">You must be logged in to view this page.</p>
         <Link href="/api/auth/signin" className="text-blue-600 underline">Sign in</Link>
       </div>
@@ -68,11 +68,11 @@ export default function TopicLearning() {
   }
 
   if (error) {
-    return <div className="p-8 text-center text-red-600">Error: {error}</div>;
+    return <div className="p-20 text-center text-red-600">Error: {error}</div>;
   }
 
   if (!topic || !course?.course) {
-    return <div className="p-8 text-center">Topic not found.</div>;
+    return <div className="p-20 text-center">Topic not found.</div>;
   }
 
   // compute prev and next using the topics array returned by course API
@@ -81,31 +81,7 @@ export default function TopicLearning() {
   const prevTopic = topicsList[currentIndex - 1];
   const nextTopic = topicsList[currentIndex + 1];
 
-  const handleMarkComplete = async () => {
-    if (isCompleted) return;
-    setMarking(true);
-    try {
-      const res = await fetch("/api/topics/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseId: course.course._id, topicId: topic._id || topicId }),
-      });
-
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.message || "Failed");
-      setIsCompleted(true);
-
-      // Optionally refresh course progress / topics
-      const cRes = await fetch(`/api/courses/${courseId}`, { cache: "no-store" });
-      const cJson = await cRes.json();
-      setCourse(cJson);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Failed to mark complete");
-    } finally {
-      setMarking(false);
-    }
-  };
+  
 
   // safe content rendering: we keep simple parsing like you had, but we use topic.content from server
   const content = topic.content || "";
@@ -152,18 +128,10 @@ export default function TopicLearning() {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <button
-            onClick={handleMarkComplete}
-            disabled={isCompleted || marking}
-            className={`flex-1 py-3 px-6 rounded-xl font-semibold transition-all ${isCompleted ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "bg-green-600 text-white hover:bg-green-700"
-              }`}
-          >
-            {isCompleted ? "✓ Completed" : (marking ? "Marking..." : "Mark as Completed")}
-          </button>
 
           <Link
-            href={`/quiz/${topicId}?courseId=${courseId}`}
-            className="flex-1 py-3 px-6 bg-linear-to-r from-blue-600 to-blue-500 text-white rounded-xl font-semibold text-center"
+            href={`/quiz/${topicId}?courseId=${course.course._id}`}
+            className=" py-3 px-6 bg-linear-to-r from-blue-600 to-blue-500 text-white rounded-xl font-semibold text-center"
           >
             Start Quiz →
           </Link>
