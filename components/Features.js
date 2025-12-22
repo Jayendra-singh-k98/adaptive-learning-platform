@@ -7,7 +7,7 @@ import Link from "next/link";
 const Features = () => {
 
   return (
-    <section className="w-full py-10 bg-linear-to-b from-white to-gray-50">
+    <section className="w-full py-13 bg-linear-to-b from-white to-gray-50">
       <div className="max-w-6xl mx-auto px-2">
 
         {/* Header */}

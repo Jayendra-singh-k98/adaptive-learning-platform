@@ -1,4 +1,4 @@
-// src/app/api/ai/recommendation/route.js
+
 import connectDB from "@/db/connectdb";
 import Topic from "@/db/models/Topic";
 import StudentTopicProgress from "@/db/models/StudentTopicProgress";

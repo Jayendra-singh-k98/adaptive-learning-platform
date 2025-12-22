@@ -329,7 +329,7 @@ const TeacherDashboard = () => {
 
   // ---------- Render (kept the UI unchanged) ----------
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white pt-7">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white py-12">
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Teacher Dashboard</h1>
@@ -421,7 +421,8 @@ const TeacherDashboard = () => {
                     placeholder="Describe what students will learn..."
                     rows="4"
                     required
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none
+                    bg-neutral-secondary-medium border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block p-3.5 shadow-xs placeholder:text-body"
                   />
                 </div>
 
@@ -496,7 +497,8 @@ const TeacherDashboard = () => {
                     placeholder="Write the lesson content here..."
                     rows="8"
                     required
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none
+                    bg-neutral-secondary-medium border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block p-3.5 shadow-xs placeholder:text-body"
                   />
                   <p className="text-xs text-gray-400 mt-2">Tip: You can use **bold** for headings</p>
                 </div>
