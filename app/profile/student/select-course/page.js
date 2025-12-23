@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function SelectCoursePage() {
   const [courses, setCourses] = useState([]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next");
+  const { data: session } = useSession();
 
   useEffect(() => {
     const loadCourses = async () => {
@@ -33,6 +35,22 @@ export default function SelectCoursePage() {
   };
 
 
+  
+  
+  if (!session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-b from-gray-50 to-white">
+        <div className="text-center">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-4xl">🔒</span>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Authentication Required</h2>
+          <p className="text-gray-600">Please login to view your progress</p>
+        </div>
+      </div>
+    );
+  }
+  
   const PAGE_CONFIG = {
     "ai-recommendation": {
       title: "Select Your Course",
@@ -53,9 +71,7 @@ export default function SelectCoursePage() {
       badge: "💬 Doubt Solver",
     },
   };
-
   const config = PAGE_CONFIG[next] || PAGE_CONFIG["ai-recommendation"];
-
   return (
     <div className="min-h-screen bg-linaer-to-b from-gray-50 to-white pt-5">
       <div className="max-w-6xl mx-auto px-6 py-12">

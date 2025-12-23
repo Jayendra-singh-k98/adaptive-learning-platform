@@ -14,26 +14,26 @@ export default function AIRecommendationPage() {
   const { courseId } = useParams();
 
   useEffect(() => {
-   if (!session || !courseId) return;
- 
-   const loadData = async () => {
-     try {
-       const [recRes, statsRes] = await Promise.all([
-         fetch(`/api/ai/recommendation?courseId=${courseId}`),
-         fetch(`/api/student/stats?courseId=${courseId}`)
-       ]);
- 
-       setRecommendation(await recRes.json());
-       setStats(await statsRes.json());
-     } catch (err) {
-       console.error(err);
-     } finally {
-       setLoading(false);
-     }
-   };
- 
-   loadData();
- }, [session, courseId]);
+    if (!session || !courseId) return;
+
+    const loadData = async () => {
+      try {
+        const [recRes, statsRes] = await Promise.all([
+          fetch(`/api/ai/recommendation?courseId=${courseId}`),
+          fetch(`/api/student/stats?courseId=${courseId}`)
+        ]);
+
+        setRecommendation(await recRes.json());
+        setStats(await statsRes.json());
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [session, courseId]);
 
   if (status === "loading") {
     return (
@@ -43,16 +43,7 @@ export default function AIRecommendationPage() {
     );
   }
 
-  if (!session) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Please login to view recommendations</p>
-      </div>
-    );
-  }
-
-
-
+  
 
 
   if (loading) {
@@ -123,13 +114,9 @@ export default function AIRecommendationPage() {
               </div>
 
               {/* Study Goal */}
-              <div className="bg-linear-to-br from-purple-600 to-blue-600 rounded-2xl p-6 text-white shadow-xl">
-                <h3 className="font-bold mb-2">Daily Goal 🎯</h3>
-                <p className="text-purple-100 text-sm mb-4">Complete 2 topics today</p>
-                <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
-                  <div className="h-full bg-white rounded-full w-1/2"></div>
-                </div>
-                <p className="text-xs text-purple-200 mt-2">1 of 2 completed</p>
+              <div className="bg-linear-to-br from-purple-600 to-blue-600 rounded-2xl pt-6 pl-6 pb-3 text-white shadow-xl">
+                <h3 className="font-bold mb-1">Daily Goal 🎯</h3>
+                <p className="text-purple-100 text-sm mb-4">Complete 2 topics Daily</p>
               </div>
             </div>
           </div>
@@ -150,25 +137,27 @@ export default function AIRecommendationPage() {
         )}
 
         {/* Alternative Topics */}
-        {recommendation && (
+        {recommendation?.alternatives?.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Other Suggested Topics</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Other Suggested Topics
+            </h2>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <AlternativeTopic
-                title="Functions and Methods"
-                difficulty="Intermediate"
-                duration="45 min"
-                color="from-blue-500 to-cyan-400"
-              />
-              <AlternativeTopic
-                title="Data Structures Basics"
-                difficulty="Beginner"
-                duration="30 min"
-                color="from-purple-500 to-pink-400"
-              />
+              {recommendation.alternatives.map(topic => (
+                <AlternativeTopic
+                  key={topic._id}
+                  title={topic.title}
+                  difficulty={topic.difficulty || "Intermediate"}
+                  duration="30 min"
+                  courseId={courseId}
+                  topicId={topic._id}
+                />
+              ))}
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
@@ -176,7 +165,7 @@ export default function AIRecommendationPage() {
 
 
 function AIRecommendationCard({ data, courseId }) {
-    
+
   return (
     <div className="relative bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-xl">
       {/* Gradient Header */}
@@ -201,18 +190,14 @@ function AIRecommendationCard({ data, courseId }) {
           </div>
           <div className="flex-1">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Next Topic: {data.topic?.title || "Loading..."}
+              Next Topic: {data.topic?.title}
             </h2>
             <div className="flex items-center gap-3 text-sm text-gray-500">
               <span className="flex items-center gap-1">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                30 min
-              </span>
-              <span>•</span>
-              <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                Intermediate
+                20 min
               </span>
             </div>
           </div>
@@ -262,9 +247,6 @@ function AIRecommendationCard({ data, courseId }) {
           >
             Start Learning →
           </Link>
-          <button className="px-6 py-3.5 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all">
-            Skip for Now
-          </button>
         </div>
       </div>
 
@@ -274,25 +256,28 @@ function AIRecommendationCard({ data, courseId }) {
   );
 }
 
-function AlternativeTopic({ title, difficulty, duration, color }) {
+function AlternativeTopic({ title, difficulty, duration, courseId, topicId }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-lg hover:border-blue-100 transition-all cursor-pointer group">
+    <Link
+      href={`/courses/${courseId}/${topicId}`}
+      className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-lg transition-all group"
+    >
       <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-lg bg-linear-to-br ${color} flex items-center justify-center text-xl shadow-sm`}>
-          📚
+        <div className="w-12 h-12 rounded-lg bg-linear-to-br from-blue-500 to-purple-500 flex items-center justify-center text-xl text-white">
+          📘
         </div>
+
         <div className="flex-1">
-          <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{title}</h3>
-          <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-            <span>{difficulty}</span>
-            <span>•</span>
-            <span>{duration}</span>
-          </div>
+          <h3 className="font-bold text-gray-900 group-hover:text-blue-600">
+            {title}
+          </h3>
+          <p className="text-xs text-gray-500">
+            {difficulty} • {duration}
+          </p>
         </div>
-        <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-        </svg>
+
+        <span className="text-gray-400 group-hover:text-blue-600">→</span>
       </div>
-    </div>
+    </Link>
   );
 }

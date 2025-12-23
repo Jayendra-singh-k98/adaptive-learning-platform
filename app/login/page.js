@@ -11,13 +11,13 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
 
   useEffect(() => {
-  if (session?.user?.role === "teacher") {
-    window.location.replace("/teacher");
-  } 
-  else if (session?.user?.role === "student") {
-    window.location.replace("/profile");
-  }
-}, [session]);
+    if (session?.user?.role === "teacher") {
+      window.location.replace("/teacher");
+    }
+    else if (session?.user?.role === "student") {
+      window.location.replace("/profile");
+    }
+  }, [session]);
 
 
 
@@ -33,11 +33,16 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await signIn("credentials", {
+    const res = await signIn("credentials", {
       email: formData.email,
       password: formData.password,
       redirect: false,
     });
+    
+    if (!res.ok) {
+      alert(res.error); // 👈 SHOW ERROR HERE
+      return;
+    }
   };
 
   return (
@@ -52,9 +57,9 @@ const Login = () => {
           </div>
 
           {/* Google Login */}
-          {/* <button
-          type="button" 
-           onClick={() => signIn("google", { callbackUrl: "/profile" })}
+          <button
+            type="button"
+            onClick={() => signIn("google")}
             className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border-2 border-gray-200 rounded-xl font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-50 transition-all"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -64,14 +69,14 @@ const Login = () => {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
             Continue with Google
-          </button> */}
+          </button>
 
           {/* Divider */}
-          {/* <div className="flex items-center gap-4 my-6">
+          <div className="flex items-center gap-4 my-6">
             <div className="flex-1 h-px bg-gray-200" />
             <span className="text-sm text-gray-400">or</span>
             <div className="flex-1 h-px bg-gray-200" />
-          </div> */}
+          </div>
 
           {/* Manual login */}
           <form onSubmit={handleSubmit} className="space-y-5">

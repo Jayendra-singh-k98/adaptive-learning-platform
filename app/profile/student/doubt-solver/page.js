@@ -58,11 +58,10 @@ export default function DoubtSolver() {
       setMessages(data.messages);
     }
   };
-
-
+  
   return (
     <div className="min-h-screen flex flex-col bg-linear-to-br from-indigo-50 via-white to-purple-50">
-      <div className="max-w-4xl mx-auto px-4 py-18">
+      <div className="w-[80%] mx-auto px-4 py-18">
 
         {/* Header */}
         <div className="text-center mb-12">

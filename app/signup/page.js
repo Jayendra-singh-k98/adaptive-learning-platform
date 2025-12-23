@@ -14,13 +14,13 @@ const Signup = () => {
   const [passwordError, setPasswordError] = useState("");
 
   useEffect(() => {
-  if (session?.user?.role === "teacher") {
-    window.location.replace("/teacher");       // Teacher 
-  } 
-  else if (session?.user?.role === "student") {
-    window.location.replace("/profile");     // Student 
-  }
-}, [session]);
+    if (session?.user?.role === "teacher") {
+      window.location.replace("/teacher");       // Teacher 
+    }
+    else if (session?.user?.role === "student") {
+      window.location.replace("/profile");     // Student 
+    }
+  }, [session]);
 
 
   const handleChange = (e) => {
@@ -47,7 +47,11 @@ const Signup = () => {
 
     const data = await res.json();
 
-
+    // ❌ signup failed
+    if (!data.success) {
+      alert(data.message);   // ✅ HERE IS ALERT
+      return;
+    }
 
     if (data.success) {
       await signIn("credentials", {
@@ -62,6 +66,7 @@ const Signup = () => {
 
   return (
     <section className="min-h-screen bg-linear-to-b from-white via-blue-50/30 to-white flex items-center justify-center md:pt-16 ">
+
 
       <div className="relative w-full max-w-md">
         {/* Card */}

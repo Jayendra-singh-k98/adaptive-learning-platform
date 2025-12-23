@@ -48,19 +48,6 @@ export default function TrackProgressPage() {
         );
     }
 
-    if (!session) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-linear-to-b from-gray-50 to-white">
-                <div className="text-center">
-                    <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-4xl">🔒</span>
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Authentication Required</h2>
-                    <p className="text-gray-600">Please login to view your progress</p>
-                </div>
-            </div>
-        );
-    }
 
     if (loading) {
         return (
