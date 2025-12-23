@@ -51,24 +51,24 @@ const TeacherDashboard = () => {
 
   // Helper: try fetch quizzes from both possible endpoints
   const fetchAllQuizzes = async () => {
-  try {
-    const res = await fetch("/api/quizs");  // your correct API path
-    const json = await res.json();
+    try {
+      const res = await fetch("/api/quizs");  // your correct API path
+      const json = await res.json();
 
-    if (!json.success) return [];
+      if (!json.success) return [];
 
-    // If API returns array → return it
-    if (Array.isArray(json.quizzes)) return json.quizzes;
+      // If API returns array → return it
+      if (Array.isArray(json.quizzes)) return json.quizzes;
 
-    // If API returns single object → wrap in array
-    if (json.quiz) return [json.quiz];
+      // If API returns single object → wrap in array
+      if (json.quiz) return [json.quiz];
 
-    return [];
-  } catch (e) {
-    console.error("fetchAllQuizzes error:", e);
-    return [];
-  }
-};
+      return [];
+    } catch (e) {
+      console.error("fetchAllQuizzes error:", e);
+      return [];
+    }
+  };
 
 
   // Load courses (simple) and then enrich via loadTopicsAndQuizzes
@@ -92,66 +92,97 @@ const TeacherDashboard = () => {
 
   // fetch all topics & quizzes, compute counts and enrich courses
   const loadTopicsAndQuizzes = useCallback(async (providedCourses = null) => {
-    try {
-      // fetch topics
-      const tRes = await fetch("/api/topics");
-      const tJson = await tRes.json();
-      const allTopics = tJson.success ? (tJson.topics || []) : (Array.isArray(tJson) ? tJson : []);
+  try {
+    // 1️⃣ Fetch topics
+    const tRes = await fetch("/api/topics");
+    const tJson = await tRes.json();
+    const allTopics = tJson.success ? tJson.topics : [];
 
-      // fetch quizzes (robust)
-      const allQuizzes = await fetchAllQuizzes();
+    // 2️⃣ Fetch quizzes
+    const allQuizzes = await fetchAllQuizzes();
 
-      setTopics(allTopics);
-      setQuizzes(allQuizzes);
+    // 3️⃣ Fetch student progress (NEW)
+    const pRes = await fetch("/api/admin/progress");
+    const pJson = await pRes.json();
+    const allProgress = pJson.success ? pJson.progress : [];
 
-      // ensure we have courses
-      const coursesFromServer = providedCourses || (await fetchCourses()) || [];
+    // 4️⃣ Ensure courses
+    const coursesFromServer =
+      providedCourses || (await fetchCourses()) || [];
 
-      // Totals
-      const totalTopics = allTopics.length;
-      const totalQuizzes = allQuizzes.length;
-      const activeStudents = coursesFromServer.reduce((acc, c) => acc + (c.students || 0), 0);
+    // 5️⃣ Topics per course
+    const topicsByCourse = {};
+    allTopics.forEach(t => {
+      const cid = String(t.courseId);
+      topicsByCourse[cid] = (topicsByCourse[cid] || 0) + 1;
+    });
 
-      setStats(prev => [
-        { ...prev[0], value: String(coursesFromServer.length) },
-        { ...prev[1], value: String(totalTopics) },
-        { ...prev[2], value: String(activeStudents) },
-        { ...prev[3], value: String(totalQuizzes) }
-      ]);
+    // 6️⃣ Quizzes per course
+    const topicCourseMap = {};
+    allTopics.forEach(t => {
+      topicCourseMap[String(t._id)] = String(t.courseId);
+    });
 
-      // counts per course
-      const topicsByCourse = allTopics.reduce((map, t) => {
-        const cid = String(t.courseId || t.course || t.course_id || "");
-        if (!cid) return map;
-        map[cid] = (map[cid] || 0) + 1;
-        return map;
-      }, {});
+    const quizzesByCourse = {};
+    allQuizzes.forEach(q => {
+      const courseId = topicCourseMap[String(q.topicId)];
+      if (courseId) {
+        quizzesByCourse[courseId] =
+          (quizzesByCourse[courseId] || 0) + 1;
+      }
+    });
 
-      // map topicId -> courseId
-      const topicCourseMap = allTopics.reduce((m, t) => {
-        m[String(t._id || t.id)] = String(t.courseId || t.course || "");
-        return m;
-      }, {});
+    // 7️⃣ Students per course (CORRECT LOGIC)
+    const studentsByCourse = {};
+    allProgress.forEach(p => {
+      const cid = String(p.courseId);
+      const sid = String(p.studentId);
 
-      const quizzesByCourse = allQuizzes.reduce((map, q) => {
-        const topicId = String(q.topicId || q.topic || "");
-        const courseId = topicCourseMap[topicId];
-        if (courseId) map[courseId] = (map[courseId] || 0) + 1;
-        return map;
-      }, {});
+      if (!studentsByCourse[cid]) {
+        studentsByCourse[cid] = new Set();
+      }
+      studentsByCourse[cid].add(sid);
+    });
 
-      const enriched = (coursesFromServer || []).map(c => ({
+    // 8️⃣ Enrich courses
+    const enriched = coursesFromServer.map(c => {
+      const cid = String(c._id);
+      return {
         ...c,
-        topicCount: topicsByCourse[String(c._id || c.id)] || 0,
-        quizCount: quizzesByCourse[String(c._id || c.id)] || 0
-      }));
+        topicCount: topicsByCourse[cid] || 0,
+        quizCount: quizzesByCourse[cid] || 0,
+        students: studentsByCourse[cid]
+          ? studentsByCourse[cid].size
+          : 0
+      };
+    });
 
-      const my = session?.user?.email ? enriched.filter(c => c.createdBy === session.user.email) : enriched;
-      setCourses(my.length ? my : enriched);
-    } catch (err) {
-      console.error("loadTopicsAndQuizzes error", err);
-    }
-  }, [fetchCourses, session]);
+    const my = session?.user?.email
+      ? enriched.filter(c => c.createdBy === session.user.email)
+      : enriched;
+
+    setCourses(my.length ? my : enriched);
+
+    // 9️⃣ Update stats cards
+    setStats(prev => [
+      { ...prev[0], value: String(my.length) },
+      { ...prev[1], value: String(allTopics.length) },
+      {
+        ...prev[2],
+        value: String(
+          Object.values(studentsByCourse).reduce(
+            (sum, s) => sum + s.size,
+            0
+          )
+        )
+      },
+      { ...prev[3], value: String(allQuizzes.length) }
+    ]);
+  } catch (err) {
+    console.error("loadTopicsAndQuizzes error", err);
+  }
+}, [fetchCourses, session]);
+
 
   // initial load: courses -> topics/quizzes
   useEffect(() => {
@@ -397,7 +428,7 @@ const TeacherDashboard = () => {
         )}
 
         {activeTab === "add-course" && (
-          <div className="max-w-2xl">
+          <div className="max-w-5xl">
             <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Course</h2>
               <form onSubmit={handleCourseSubmit} className="space-y-5">
@@ -421,8 +452,7 @@ const TeacherDashboard = () => {
                     placeholder="Describe what students will learn..."
                     rows="4"
                     required
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none
-                    bg-neutral-secondary-medium border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block p-3.5 shadow-xs placeholder:text-body"
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-800 placeholder-gray-400 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none"
                   />
                 </div>
 
@@ -458,7 +488,7 @@ const TeacherDashboard = () => {
         )}
 
         {activeTab === "add-topic" && (
-          <div className="max-w-2xl">
+          <div className="max-w-5xl">
             <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Add New Topic</h2>
               <form onSubmit={handleTopicSubmit} className="space-y-5">
@@ -527,7 +557,7 @@ const TeacherDashboard = () => {
         )}
 
         {activeTab === "add-quiz" && (
-          <div className="max-w-3xl">
+          <div className="max-w-4xl">
             <div className="bg-white rounded-2xl border border-gray-100 p-8 shadow-sm">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Create Quiz</h2>
               <form onSubmit={handleQuizSubmit} className="space-y-6">
