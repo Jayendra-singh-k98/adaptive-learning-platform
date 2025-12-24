@@ -1,4 +1,3 @@
-"use client"
 import React from "react"
 import Features from "../../components/Features"
 import { useSearchParams } from "next/navigation";
