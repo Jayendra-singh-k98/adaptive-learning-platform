@@ -28,7 +28,7 @@ const Hero = () => {
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight text-gray-900">
               Learn Smarter with
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600"> AI-Powered </span>
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-purple-600"> AI-Powered </span>
               Education
             </h1>
 
@@ -39,7 +39,7 @@ const Hero = () => {
             <div className="flex flex-wrap gap-4 mt-8">
               <Link
                 href={user ? "/profile" : "/signup"}
-                className="group inline-flex items-center gap-2 px-7 py-3.5 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl font-semibold hover:shadow-xl hover:shadow-blue-500/25 hover:-translate-y-0.5 transition-all"
+                className="group inline-flex items-center gap-2 px-7 py-3.5 bg-linear-to-r from-blue-600 to-blue-500 text-white rounded-xl font-semibold hover:shadow-xl hover:shadow-blue-500/25 hover:-translate-y-0.5 transition-all"
               >
                 Get Started Free
                 <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,7 +59,7 @@ const Hero = () => {
                 <div className="absolute inset-0 border border-blue-100 rounded-full" />
               </div>
 
-              <div className="relative w-72 md:w-96 h-72 md:h-96 rounded-3xl bg-gradient-to-br from-blue-100 to-purple-100 p-2 shadow-2xl shadow-blue-500/10">
+              <div className="relative w-72 md:w-96 h-72 md:h-96 rounded-3xl bg-linear-to-br from-blue-100 to-purple-100 p-2 shadow-2xl shadow-blue-500/10">
                 <img
                   src="./Ai-learning.jpg"
                   alt="AI Learning Illustration"
@@ -98,7 +98,7 @@ const Hero = () => {
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Students */}
-            <div className="group relative overflow-hidden rounded-2xl border-2 border-blue-100 bg-gradient-to-br from-blue-50 to-blue-100/50 p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+            <div className="group relative overflow-hidden rounded-2xl border-2 border-blue-100 bg-linear-to-br from-blue-50 to-blue-100/50 p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full blur-3xl" />
               <div className="relative">
                 <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-2xl mb-5 shadow-lg">
