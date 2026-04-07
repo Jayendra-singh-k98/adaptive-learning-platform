@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import MarkdownEditor from "@/components/MarkdownEditor";
 
 const TeacherDashboard = () => {
   const { data: session, status } = useSession();
@@ -11,7 +12,6 @@ const TeacherDashboard = () => {
 
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
-
   const [courseForm, setCourseForm] = useState({
     title: "",
     description: "",
@@ -92,96 +92,96 @@ const TeacherDashboard = () => {
 
   // fetch all topics & quizzes, compute counts and enrich courses
   const loadTopicsAndQuizzes = useCallback(async (providedCourses = null) => {
-  try {
-    // 1️⃣ Fetch topics
-    const tRes = await fetch("/api/topics");
-    const tJson = await tRes.json();
-    const allTopics = tJson.success ? tJson.topics : [];
+    try {
+      // 1️⃣ Fetch topics
+      const tRes = await fetch("/api/topics");
+      const tJson = await tRes.json();
+      const allTopics = tJson.success ? tJson.topics : [];
 
-    // 2️⃣ Fetch quizzes
-    const allQuizzes = await fetchAllQuizzes();
+      // 2️⃣ Fetch quizzes
+      const allQuizzes = await fetchAllQuizzes();
 
-    // 3️⃣ Fetch student progress (NEW)
-    const pRes = await fetch("/api/admin/progress");
-    const pJson = await pRes.json();
-    const allProgress = pJson.success ? pJson.progress : [];
+      // 3️⃣ Fetch student progress (NEW)
+      const pRes = await fetch("/api/admin/progress");
+      const pJson = await pRes.json();
+      const allProgress = pJson.success ? pJson.progress : [];
 
-    // 4️⃣ Ensure courses
-    const coursesFromServer =
-      providedCourses || (await fetchCourses()) || [];
+      // 4️⃣ Ensure courses
+      const coursesFromServer =
+        providedCourses || (await fetchCourses()) || [];
 
-    // 5️⃣ Topics per course
-    const topicsByCourse = {};
-    allTopics.forEach(t => {
-      const cid = String(t.courseId);
-      topicsByCourse[cid] = (topicsByCourse[cid] || 0) + 1;
-    });
+      // 5️⃣ Topics per course
+      const topicsByCourse = {};
+      allTopics.forEach(t => {
+        const cid = String(t.courseId);
+        topicsByCourse[cid] = (topicsByCourse[cid] || 0) + 1;
+      });
 
-    // 6️⃣ Quizzes per course
-    const topicCourseMap = {};
-    allTopics.forEach(t => {
-      topicCourseMap[String(t._id)] = String(t.courseId);
-    });
+      // 6️⃣ Quizzes per course
+      const topicCourseMap = {};
+      allTopics.forEach(t => {
+        topicCourseMap[String(t._id)] = String(t.courseId);
+      });
 
-    const quizzesByCourse = {};
-    allQuizzes.forEach(q => {
-      const courseId = topicCourseMap[String(q.topicId)];
-      if (courseId) {
-        quizzesByCourse[courseId] =
-          (quizzesByCourse[courseId] || 0) + 1;
-      }
-    });
+      const quizzesByCourse = {};
+      allQuizzes.forEach(q => {
+        const courseId = topicCourseMap[String(q.topicId)];
+        if (courseId) {
+          quizzesByCourse[courseId] =
+            (quizzesByCourse[courseId] || 0) + 1;
+        }
+      });
 
-    // 7️⃣ Students per course (CORRECT LOGIC)
-    const studentsByCourse = {};
-    allProgress.forEach(p => {
-      const cid = String(p.courseId);
-      const sid = String(p.studentId);
+      // 7️⃣ Students per course (CORRECT LOGIC)
+      const studentsByCourse = {};
+      allProgress.forEach(p => {
+        const cid = String(p.courseId);
+        const sid = String(p.studentId);
 
-      if (!studentsByCourse[cid]) {
-        studentsByCourse[cid] = new Set();
-      }
-      studentsByCourse[cid].add(sid);
-    });
+        if (!studentsByCourse[cid]) {
+          studentsByCourse[cid] = new Set();
+        }
+        studentsByCourse[cid].add(sid);
+      });
 
-    // 8️⃣ Enrich courses
-    const enriched = coursesFromServer.map(c => {
-      const cid = String(c._id);
-      return {
-        ...c,
-        topicCount: topicsByCourse[cid] || 0,
-        quizCount: quizzesByCourse[cid] || 0,
-        students: studentsByCourse[cid]
-          ? studentsByCourse[cid].size
-          : 0
-      };
-    });
+      // 8️⃣ Enrich courses
+      const enriched = coursesFromServer.map(c => {
+        const cid = String(c._id);
+        return {
+          ...c,
+          topicCount: topicsByCourse[cid] || 0,
+          quizCount: quizzesByCourse[cid] || 0,
+          students: studentsByCourse[cid]
+            ? studentsByCourse[cid].size
+            : 0
+        };
+      });
 
-    const my = session?.user?.email
-      ? enriched.filter(c => c.createdBy === session.user.email)
-      : enriched;
+      const my = session?.user?.email
+        ? enriched.filter(c => c.createdBy === session.user.email)
+        : enriched;
 
-    setCourses(my.length ? my : enriched);
+      setCourses(my.length ? my : enriched);
 
-    // 9️⃣ Update stats cards
-    setStats(prev => [
-      { ...prev[0], value: String(my.length) },
-      { ...prev[1], value: String(allTopics.length) },
-      {
-        ...prev[2],
-        value: String(
-          Object.values(studentsByCourse).reduce(
-            (sum, s) => sum + s.size,
-            0
+      // 9️⃣ Update stats cards
+      setStats(prev => [
+        { ...prev[0], value: String(my.length) },
+        { ...prev[1], value: String(allTopics.length) },
+        {
+          ...prev[2],
+          value: String(
+            Object.values(studentsByCourse).reduce(
+              (sum, s) => sum + s.size,
+              0
+            )
           )
-        )
-      },
-      { ...prev[3], value: String(allQuizzes.length) }
-    ]);
-  } catch (err) {
-    console.error("loadTopicsAndQuizzes error", err);
-  }
-}, [fetchCourses, session]);
+        },
+        { ...prev[3], value: String(allQuizzes.length) }
+      ]);
+    } catch (err) {
+      console.error("loadTopicsAndQuizzes error", err);
+    }
+  }, [fetchCourses, session]);
 
 
   // initial load: courses -> topics/quizzes
@@ -521,16 +521,12 @@ const TeacherDashboard = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Topic Content *</label>
-                  <textarea
+                  <MarkdownEditor
                     value={topicForm.content}
-                    onChange={(e) => setTopicForm({ ...topicForm, content: e.target.value })}
-                    placeholder="Write the lesson content here..."
-                    rows="8"
-                    required
-                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all resize-none
-                    bg-neutral-secondary-medium border-default-medium text-heading text-sm rounded-base focus:ring-brand focus:border-brand block p-3.5 shadow-xs placeholder:text-body"
+                    onChange={(value) =>
+                      setTopicForm({ ...topicForm, content: value })
+                    }
                   />
-                  <p className="text-xs text-gray-400 mt-2">Tip: You can use **bold** for headings</p>
                 </div>
 
                 <div>

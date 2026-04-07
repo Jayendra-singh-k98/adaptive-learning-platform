@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import MarkdownViewer from "@/components/MarkdownViewer";
 
 export default function TopicLearning() {
   const { courseId, topicId } = useParams(); // keep your folder names
@@ -81,7 +82,7 @@ export default function TopicLearning() {
   const prevTopic = topicsList[currentIndex - 1];
   const nextTopic = topicsList[currentIndex + 1];
 
-  
+
 
   // safe content rendering: we keep simple parsing like you had, but we use topic.content from server
   const content = topic.content || "";
@@ -114,16 +115,7 @@ export default function TopicLearning() {
 
         {/* Content Card */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 mb-6">
-          <div className="prose prose-gray max-w-none">
-            {content.split("\n").map((paragraph, i) => {
-              const p = paragraph.trim();
-              if (!p) return null;
-              if (p.startsWith("**") && p.endsWith("**")) {
-                return <h3 key={i} className="text-lg font-semibold text-gray-900 mt-6 mb-3">{p.replace(/\*\*/g, "")}</h3>;
-              }
-              return <p key={i} className="text-gray-700 leading-relaxed mb-4">{p}</p>;
-            })}
-          </div>
+          <MarkdownViewer content={content} />
         </div>
 
         {/* Action Buttons */}
@@ -152,7 +144,7 @@ export default function TopicLearning() {
               >
                 ← Back to Course
               </Link>
-              )
+            )
             }
           </div>
 
