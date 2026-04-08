@@ -48,20 +48,22 @@ export async function GET(req) {
 
     const avgAccuracy = scored.length
       ? Math.round(
-          scored.reduce(
-            (sum, p) => sum + (p.score / p.total) * 100,
-            0
-          ) / scored.length
-        )
+        scored.reduce(
+          (sum, p) => sum + (p.score / p.total) * 100,
+          0
+        ) / scored.length
+      )
       : 0;
 
-    // 9️⃣ Study time (approx logic)
-    const minutes = progress.reduce((sum, p) => {
-      return p.completed ? sum + 10 : sum + 5;
-    }, 0);
+    // ✅ REAL TIME CALCULATION
+    const totalSeconds = progress.reduce(
+      (sum, p) => sum + (p.time_spent || 0),
+      0
+    );
 
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
+    const hours = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = Math.floor(totalSeconds % 60);
 
     // 🔟 Progress %
     const progressPercent = totalTopics
@@ -105,7 +107,7 @@ export async function GET(req) {
       attempts,
       avgAccuracy,
       progressPercent,
-      studyTime: `${hours}h ${mins}m`,
+      studyTime: `${hours}h ${mins}m ${secs}s`,
       chartData,
     });
   } catch (error) {
@@ -114,5 +116,59 @@ export async function GET(req) {
       { error: "Internal server error" },
       { status: 500 }
     );
+  }
+}
+
+import Course from "@/db/models/Course";
+import mongoose from "mongoose";
+
+export async function POST(req) {
+  try {
+    await connectDB();
+
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // ✅ parse body ONCE
+    const body = await req.json();
+    const { topicId, courseId, time_spent } = body;
+
+    if (!topicId || !courseId || time_spent === undefined) {
+      return Response.json({ error: "Missing data" }, { status: 400 });
+    }
+
+    let realCourseId = courseId;
+
+    // 🔥 convert slug → ObjectId
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+      const course = await Course.findOne({ slug: courseId });
+
+      if (!course) {
+        return Response.json({ error: "Course not found" }, { status: 404 });
+      }
+
+      realCourseId = course._id;
+    }
+
+    // ✅ USE realCourseId
+    await StudentTopicProgress.updateOne(
+      {
+        studentId: session.user.id,
+        topicId,
+        courseId: realCourseId,
+      },
+      {
+        $inc: { time_spent: Number(time_spent) },
+      },
+      { upsert: true }
+    );
+
+    return Response.json({ success: true });
+
+  } catch (error) {
+    console.error("Time API Error:", error);
+    return Response.json({ error: error.message }, { status: 500 });
   }
 }

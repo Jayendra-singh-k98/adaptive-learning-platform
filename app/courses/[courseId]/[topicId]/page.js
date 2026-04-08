@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import MarkdownViewer from "@/components/MarkdownViewer";
 
+
 export default function TopicLearning() {
   const { courseId, topicId } = useParams(); // keep your folder names
   const router = useRouter();
@@ -13,10 +14,49 @@ export default function TopicLearning() {
 
   const [topic, setTopic] = useState(null);
   const [course, setCourse] = useState(null); // will contain topics list + course meta + progress
+  const [startTime, setStartTime] = useState(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [marking, setMarking] = useState(false);
   const [error, setError] = useState(null);
+
+  //Start Timer When Page Loads
+  useEffect(() => {
+    setStartTime(Date.now());
+  }, []);
+
+
+  const saveTime = async () => {
+    if (!startTime) return;
+
+    const endTime = Date.now();
+    const timeSpent = Math.floor((endTime - startTime) / 1000);
+
+    if (timeSpent <= 0) return;
+
+    try {
+      await fetch("/api/student/progress", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          topicId,
+          courseId,
+          time_spent: timeSpent,
+        }),
+      });
+    } catch (err) {
+      console.error("Error saving time:", err);
+    }
+  };
+
+  useEffect(() => {
+  return () => {
+    saveTime(); // ✅ runs when component unmounts
+  };
+},  [startTime, topicId, courseId]);
+
 
   useEffect(() => {
     if (!courseId || !topicId) return;
@@ -88,7 +128,7 @@ export default function TopicLearning() {
   const content = topic.content || "";
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white pt-5">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white pt-5 pb-8">
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">
@@ -123,6 +163,7 @@ export default function TopicLearning() {
 
           <Link
             href={`/quiz/${topicId}?courseId=${course.course._id}`}
+            onClick={saveTime} 
             className=" py-3 px-6 bg-linear-to-r from-blue-600 to-blue-500 text-white rounded-xl font-semibold text-center"
           >
             Start Quiz →
@@ -150,7 +191,7 @@ export default function TopicLearning() {
 
           <div>
             {nextTopic ? (
-              <Link href={`/courses/${courseId}/${nextTopic._id}`} className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600">
+              <Link href={`/courses/${courseId}/${nextTopic._id}`} onClick={saveTime}  className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600">
                 Next Topic
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
               </Link>

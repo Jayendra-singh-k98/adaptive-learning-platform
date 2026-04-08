@@ -12,7 +12,6 @@ const getRandomGradient = () => {
   return gradients[Math.floor(Math.random() * gradients.length)];
 };
 
-// Or assign them to your categories
 // const categories = [
 //   {
 //     id: "python-basics",
@@ -75,7 +74,7 @@ const CoursesPage = () => {
 
 
   return (
-    <div className="w-full py-10 bg-linear-to-b from-gray-50 to-white ">
+    <div className="w-full py-10 bg-linear-to-b from-gray-50 to-white">
       <div className="max-w-6xl mx-auto px-2">
         {/* Header */}
         <header className="mb-10 text-center">

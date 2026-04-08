@@ -8,7 +8,8 @@ const StudentTopicProgressSchema = new mongoose.Schema({
   score: { type: Number, default: 0 },
   total: { type: Number, default: 0 },
   attempts: { type: Number, default: 0 },
-  accuracy: { type: Number, default: 0 }
+  accuracy: { type: Number, default: 0 },
+  time_spent: { type: Number, default: 0 } 
 }, { timestamps: true });
 
 export default mongoose.models.StudentTopicProgress ||
