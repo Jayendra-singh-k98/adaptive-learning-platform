@@ -238,7 +238,7 @@ const Hero = () => {
       </section>
 
       {/* ─── MISSION CTA ─── */}
-      <section className="w-full py-20 bg-linear-to-b from-white to-blue-50/30">
+      <section className="w-full pb-34 bg-linear-to-b from-white to-blue-50/30">
         <div className="max-w-4xl mx-auto px-6">
           <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-blue-600 to-purple-600 p-12 text-white shadow-2xl text-center">
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />

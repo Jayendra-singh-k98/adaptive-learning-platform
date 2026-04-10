@@ -128,7 +128,7 @@ export default function TopicLearning() {
   const content = topic.content || "";
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white pt-5 pb-8">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white pt-5 pb-20">
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">

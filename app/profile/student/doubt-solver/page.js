@@ -60,8 +60,8 @@ export default function DoubtSolver() {
   };
   
   return (
-    <div className="min-h-screen flex flex-col bg-linear-to-br from-indigo-50 via-white to-purple-50 pb-4">
-      <div className="w-[80%] mx-auto px-4 py-18 ">
+    <div className="min-h-screen flex flex-col bg-linear-to-br from-indigo-50 via-white to-purple-50">
+      <div className="w-[80%] mx-auto px-4 pt-18">
 
         {/* Header */}
         <div className="text-center mb-12">

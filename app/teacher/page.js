@@ -360,7 +360,7 @@ const TeacherDashboard = () => {
 
   // ---------- Render (kept the UI unchanged) ----------
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white py-12">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white py-12 pb-25">
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Teacher Dashboard</h1>

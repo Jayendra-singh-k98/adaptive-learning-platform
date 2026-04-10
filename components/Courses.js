@@ -12,40 +12,7 @@ const getRandomGradient = () => {
   return gradients[Math.floor(Math.random() * gradients.length)];
 };
 
-// const categories = [
-//   {
-//     id: "python-basics",
-//     slug: "python-basics",
-//     title: "Python Basics",
-//     description: "Start programming with Python — fundamentals, syntax, and small projects.",
-//     gradient: getRandomGradient(),
-//     students: "2.5K"
-//   },
-//   {
-//     id: "data-structures",
-//     slug: "data-structures",
-//     title: "Data Structures",
-//     description: "Learn arrays, linked lists, stacks, queues, trees and more.",
-//     gradient: getRandomGradient(),
-//     students: "1.8K"
-//   },
-//   {
-//     id: "web-development",
-//     slug: "web-development",
-//     title: "Web Development",
-//     description: "HTML, CSS, JS and modern frameworks to build web apps.",
-//     gradient: getRandomGradient(),
-//     students: "3.2K"
-//   },
-//   {
-//     id: "aptitude-prep",
-//     slug: "aptitude-prep",
-//     title: "Aptitude Prep",
-//     description: "Logical reasoning, quantitative aptitude and interview practice.",
-//     gradient: getRandomGradient(),
-//     students: "1.5K"
-//   },
-// ];
+
 
 const CoursesPage = () => {
 
@@ -74,7 +41,7 @@ const CoursesPage = () => {
 
 
   return (
-    <div className="w-full py-10 bg-linear-to-b from-gray-50 to-white">
+    <div className="w-full py-10 bg-linear-to-b from-gray-50 to-white pb-33">
       <div className="max-w-6xl mx-auto px-2">
         {/* Header */}
         <header className="mb-10 text-center">
