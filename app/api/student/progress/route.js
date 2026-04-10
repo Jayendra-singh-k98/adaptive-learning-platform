@@ -4,6 +4,7 @@ import Topic from "@/db/models/Topic";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
+
 export async function GET(req) {
   try {
     // 1️⃣ Connect DB

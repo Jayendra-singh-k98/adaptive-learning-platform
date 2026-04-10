@@ -52,10 +52,14 @@ export default function TopicLearning() {
   };
 
   useEffect(() => {
-  return () => {
-    saveTime(); // ✅ runs when component unmounts
-  };
-},  [startTime, topicId, courseId]);
+  if (!startTime) return;
+
+  const interval = setInterval(() => {
+    saveTime(); // 🔥 save every 10 seconds
+  }, 1000); // 10 sec
+
+  return () => clearInterval(interval);
+}, [startTime, topicId, courseId]);
 
 
   useEffect(() => {
@@ -128,7 +132,7 @@ export default function TopicLearning() {
   const content = topic.content || "";
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white pt-5 pb-20">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white pt-5 pb-12">
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-6">

@@ -128,12 +128,12 @@ export default function DoubtSolver() {
         </div>
 
         {/* Input Section */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+        <div className="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 opacity-95 fixed bottom-14 left-1/2 transform -translate-x-1/2 w-[80%]">
           <textarea
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="Ask your doubt… (Ctrl + Enter)"
-            className="w-full border-2 border-gray-200 p-4 rounded-xl mb-4 focus:outline-none focus:border-blue-500 resize-none h-20"
+            className="w-full border-2 border-gray-200 p-4 rounded-xl focus:outline-none focus:border-blue-500 resize-none h-20"
             onKeyDown={(e) => {
               if (e.key === "Enter" && e.ctrlKey) {
                 askDoubt();

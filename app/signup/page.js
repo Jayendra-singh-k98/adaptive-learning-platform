@@ -65,7 +65,7 @@ const Signup = () => {
 
 
   return (
-    <section className="min-h-screen bg-linear-to-b from-white via-blue-50/30 to-white flex items-center justify-center md:pt-16 ">
+    <section className="min-h-screen bg-linear-to-b from-white via-blue-50/30 to-white flex items-center justify-center pt-16 pb-16">
 
 
       <div className="relative w-full max-w-md">

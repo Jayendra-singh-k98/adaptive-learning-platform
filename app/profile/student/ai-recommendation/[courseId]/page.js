@@ -65,7 +65,7 @@ export default function AIRecommendationPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white pt-10 pb-25">
+    <div className="min-h-screen bg-linear-to-b from-gray-50 to-white pt-10 pb-15">
       <div className="max-w-6xl mx-auto px-6 py-12">
 
         {/* Header with AI Badge */}
