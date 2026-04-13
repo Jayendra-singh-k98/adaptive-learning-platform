@@ -17,6 +17,9 @@ const QuizResult = () => {
   const [result, setResult] = useState(null);
   const [questions, setQuestions] = useState([]);
   const hasSubmitted = useRef(false);
+  
+  const timeSpent = search.get("time"); // ✅
+
 
   useEffect(() => {
     const key = `quiz_result_${topicId}`;
@@ -50,7 +53,8 @@ const QuizResult = () => {
         courseId,
         topicId,
         score: json.score,
-        total: json.total
+        total: json.total,
+        time_spent: timeSpent 
       })
     }).catch(console.error);
   

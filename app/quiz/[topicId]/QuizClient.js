@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 
 const Quiz = () => {
+
   const { topicId } = useParams();
   const searchParams = useSearchParams();
   const courseId = searchParams.get("courseId");   // ✅ Correct way
@@ -13,6 +14,8 @@ const Quiz = () => {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState({});
   const [loading, setLoading] = useState(true);
+  
+  const timeSpent = searchParams.get("time");
 
   useEffect(() => {
     if (!topicId) return;
@@ -58,7 +61,7 @@ const Quiz = () => {
     );
 
     // 🚀 Redirect with courseId
-    router.push(`/quiz/${topicId}/result?courseId=${courseId}`);
+    router.push(`/quiz/${topicId}/result?courseId=${courseId}&time=${timeSpent}`);
   };
 
   /* LOADING UI */

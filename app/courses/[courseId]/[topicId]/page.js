@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import MarkdownViewer from "@/components/MarkdownViewer";
 
 
 export default function TopicLearning() {
   const { courseId, topicId } = useParams(); // keep your folder names
+  const intervalRef = useRef(null);
+  const totalTimeRef = useRef(0);
   const router = useRouter();
   const { data: session, status } = useSession();
 
@@ -20,46 +22,24 @@ export default function TopicLearning() {
   const [marking, setMarking] = useState(false);
   const [error, setError] = useState(null);
 
+  const searchParams = useSearchParams();
+  const timeSpent = searchParams.get("time");
+
   //Start Timer When Page Loads
   useEffect(() => {
     setStartTime(Date.now());
-  }, []);
+  }, [topicId]);
 
 
-  const saveTime = async () => {
+  const saveTime = () => {
     if (!startTime) return;
 
     const endTime = Date.now();
-    const timeSpent = Math.floor((endTime - startTime) / 1000);
+    const totalTime = Math.floor((endTime - startTime) / 1000);
 
-    if (timeSpent <= 0) return;
-
-    try {
-      await fetch("/api/student/progress", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          topicId,
-          courseId,
-          time_spent: timeSpent,
-        }),
-      });
-    } catch (err) {
-      console.error("Error saving time:", err);
-    }
+    totalTimeRef.current = totalTime; // ✅ ONLY STORE
   };
 
-  useEffect(() => {
-  if (!startTime) return;
-
-  const interval = setInterval(() => {
-    saveTime(); // 🔥 save every 10 seconds
-  }, 1000); // 10 sec
-
-  return () => clearInterval(interval);
-}, [startTime, topicId, courseId]);
 
 
   useEffect(() => {
@@ -98,6 +78,16 @@ export default function TopicLearning() {
 
     load();
   }, [courseId, topicId, session]);
+
+  const handleStartQuiz = async (e) => {
+    e.preventDefault();
+
+    saveTime(); // ✅ calculate
+
+    router.push(
+      `/quiz/${topicId}?courseId=${course.course._id}&time=${totalTimeRef.current}`
+    );
+  };
 
   if (status === "loading" || loading) {
     return <div className="p-20 text-center">Loading...</div>;
@@ -165,13 +155,12 @@ export default function TopicLearning() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
 
-          <Link
-            href={`/quiz/${topicId}?courseId=${course.course._id}`}
-            onClick={saveTime} 
+          <button
+            onClick={handleStartQuiz}
             className=" py-3 px-6 bg-linear-to-r from-blue-600 to-blue-500 text-white rounded-xl font-semibold text-center"
           >
             Start Quiz →
-          </Link>
+          </button>
         </div>
 
         {/* Navigation */}
@@ -195,7 +184,7 @@ export default function TopicLearning() {
 
           <div>
             {nextTopic ? (
-              <Link href={`/courses/${courseId}/${nextTopic._id}`} onClick={saveTime}  className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600">
+              <Link href={`/courses/${courseId}/${nextTopic._id}`} onClick={saveTime} className="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600">
                 Next Topic
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
               </Link>
