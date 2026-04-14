@@ -15,9 +15,6 @@ export async function POST(req) {
 
     const body = await req.json();
 
-    // console.log("STEP 4: BACKEND RECEIVED =", body);
-    console.log("STEP 4: BACKEND RECEIVED =", body.time_spent)
-
     const { courseId, topicId, score, total, time_spent } = body;
 
     if (!courseId || !topicId) {

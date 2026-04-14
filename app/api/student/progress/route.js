@@ -87,15 +87,32 @@ export async function GET(req) {
       topicMap[t._id.toString()] = t.title;
     });
 
+    function getLevel(accuracy) {
+      if (accuracy < 40) return { level: 0, label: "Weak" };
+      if (accuracy < 70) return { level: 1, label: "Average" };
+      return { level: 2, label: "Strong" };
+    }
+
     // ✅ Chart uses ONLY latest attempts
-    const chartData = latestProgress.map(p => ({
-      topicId: p.topicId,
-      title: topicMap[p.topicId.toString()] || "Topic",
-      score: p.score || 0,
-      total: p.total || 0,
-      attempts: p.attempts || 0,
-      accuracy: p.accuracy || 0,
-    }));
+    const chartData = latestProgress.map(p => {
+      const accuracy = p.accuracy || 0;
+
+      const { level, label } = getLevel(accuracy);
+
+      return {
+        topic: topicMap[p.topicId.toString()] || "Topic",
+        score: p.score || 0,
+        total: p.total || 0,
+        attempts: p.attempts || 0,
+        accuracy,
+        time_spent: p.time_spent || 0,
+        level,
+        label,
+        completed: p.completed || false,
+      };
+    });
+
+    console.log("FINAL DATASET:", chartData);
 
     return Response.json({
       totalTopics,
@@ -183,7 +200,7 @@ export async function POST(req) {
           { _id: last._id },
           { $inc: { time_spent: Number(time_spent) } }
         );
-      } 
+      }
     }
 
     return Response.json({ success: true });
