@@ -48,7 +48,9 @@ export async function GET(req, { params }) {
     });
 
 
-    const completedTopicIds = completedProgress.map(p => String(p.topicId));
+    const completedTopicIds = [
+      ...new Set(completedProgress.map(p => String(p.topicId)))
+    ];
 
     // 4. Add completed flag
     const topicsWithStatus = topics.map(t => ({
