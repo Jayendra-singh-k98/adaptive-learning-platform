@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
 
-function getLevel(accuracy) {
+function getLabel(accuracy) {
   if (accuracy < 40) return { label: "Weak" };
   if (accuracy < 80) return { label: "Average" };
   return { label: "Strong" };
@@ -49,14 +49,11 @@ export async function POST(req) {
     const attempts = last ? last.attempts + 1 : 1;
     const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
     const completed = accuracy >= 60;
-    const levelData = getLevel(accuracy);
+    const labelData = getLabel(accuracy);
 
     await StudentTopicProgress.create({
-      studentId: studentObjectId,
-      courseId: courseObjectId,
-      topicId: topicObjectId,
       topicName: topic.title,
-      level: levelData.label,
+      level: labelData.label,
       attempts, 
       score,
       total,
