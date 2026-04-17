@@ -52,6 +52,9 @@ export async function POST(req) {
     const labelData = getLabel(accuracy);
 
     await StudentTopicProgress.create({
+      studentId: studentObjectId,
+      courseId: courseObjectId, 
+      topicId: topicObjectId,     
       topicName: topic.title,
       level: labelData.label,
       attempts, 
