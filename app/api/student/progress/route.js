@@ -15,6 +15,7 @@ export async function GET(req) {
     }
 
     const { searchParams } = new URL(req.url);
+    const format = searchParams.get("format");
     const courseId = searchParams.get("courseId");
 
     if (!courseId) {
@@ -111,8 +112,6 @@ export async function GET(req) {
         completed: p.completed || false,
       };
     });
-
-    console.log("FINAL DATASET:", chartData);
 
     return Response.json({
       totalTopics,

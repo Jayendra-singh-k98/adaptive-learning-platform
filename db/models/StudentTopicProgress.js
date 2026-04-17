@@ -4,6 +4,8 @@ const StudentTopicProgressSchema = new mongoose.Schema({
   studentId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   courseId: { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true },
   topicId: { type: mongoose.Schema.Types.ObjectId, ref: "Topic", required: true },
+  topicName: { type: String, required: true }, // Added to store topic name
+  level: { type: String, enum: ["Weak", "Average", "Strong"], default: "Weak" },
   completed: { type: Boolean, default: false },
   score: { type: Number, default: 0 },
   total: { type: Number, default: 0 },

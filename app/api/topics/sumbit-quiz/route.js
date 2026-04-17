@@ -1,8 +1,15 @@
 import connectDB from "@/db/connectdb";
 import StudentTopicProgress from "@/db/models/StudentTopicProgress";
+import Topic from "@/db/models/Topic";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
+
+function getLevel(accuracy) {
+  if (accuracy < 40) return { label: "Weak" };
+  if (accuracy < 80) return { label: "Average" };
+  return { label: "Strong" };
+}
 
 export async function POST(req) {
   try {
@@ -27,6 +34,12 @@ export async function POST(req) {
     const topicObjectId = new mongoose.Types.ObjectId(topicId);
     const courseObjectId = new mongoose.Types.ObjectId(courseId);
 
+    // Fetch the topic to get its name
+    const topic = await Topic.findById(topicObjectId);
+    if (!topic) {
+      return Response.json({ message: "Topic not found" }, { status: 404 });
+    }
+
     const last = await StudentTopicProgress.findOne({
       studentId: studentObjectId,
       courseId: courseObjectId,   // ✅ ObjectId
@@ -36,12 +49,15 @@ export async function POST(req) {
     const attempts = last ? last.attempts + 1 : 1;
     const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
     const completed = accuracy >= 60;
+    const levelData = getLevel(accuracy);
 
     await StudentTopicProgress.create({
       studentId: studentObjectId,
       courseId: courseObjectId,
       topicId: topicObjectId,
-      attempts,
+      topicName: topic.title,
+      level: levelData.label,
+      attempts, 
       score,
       total,
       accuracy,
