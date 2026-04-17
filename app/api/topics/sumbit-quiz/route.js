@@ -48,7 +48,7 @@ export async function POST(req) {
 
     const attempts = last ? last.attempts + 1 : 1;
     const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
-    const completed = accuracy >= 60;
+    const completed = accuracy >= 70;
     const labelData = getLabel(accuracy);
 
     await StudentTopicProgress.create({
