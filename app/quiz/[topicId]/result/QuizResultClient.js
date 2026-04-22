@@ -17,34 +17,36 @@ const QuizResult = () => {
   const [result, setResult] = useState(null);
   const [questions, setQuestions] = useState([]);
   const hasSubmitted = useRef(false);
-  
+
   const timeSpent = search.get("time"); // ✅
 
 
   useEffect(() => {
     const key = `quiz_result_${topicId}`;
     const saved = sessionStorage.getItem(key);
-  
+
     // ⛔ first validate data
     if (!saved || !courseId) return;
-  
+
     // ⛔ prevent double execution (React Strict Mode)
     if (hasSubmitted.current) return;
     hasSubmitted.current = true;
-  
+
     const json = JSON.parse(saved);
-  
+
     const computedResult = {
       score: json.score,
       total: json.total,
       percentage: Math.round((json.score / json.total) * 100),
-      passed: json.score >= Math.ceil(json.total / 2)
+      predicted: null,
+      level: null,
+      completed : null
     };
-  
+
     // 1️⃣ UI state
     setResult(computedResult);
     setQuestions(json.details);
-  
+
     // 2️⃣ DB update (single time only)
     fetch("/api/topics/sumbit-quiz", {
       method: "POST",
@@ -54,18 +56,29 @@ const QuizResult = () => {
         topicId,
         score: json.score,
         total: json.total,
-        time_spent: timeSpent 
+        time_spent: timeSpent
       })
-    }).catch(console.error);
-  
+    })
+      .then(res => res.json())
+      .then(data => {
+        console.log("API RESPONSE:", data);
+
+        setResult(prev => ({
+          ...prev,
+          predicted: data.predicted,
+          level: data.level
+        }));
+      })
+      .catch(console.error);
+
     // 3️⃣ Topic title
     fetch(`/api/quizs/${topicId}`)
       .then(res => res.json())
       .then(data => setTopicTitle(data.title))
       .catch(console.error);
-  
+
   }, [topicId, courseId]);
-  
+
 
 
   if (!result) {
@@ -78,13 +91,12 @@ const QuizResult = () => {
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Quiz Results</h1>
-          <p className="text-gray-600 mt-2">Topic: {topicTitle || topicId }</p>
+          <p className="text-gray-600 mt-2">Topic: {topicTitle || topicId}</p>
         </div>
 
         {/* Score Card */}
-        <div className={`bg-linear-to-r ${
-          result.passed ? "from-green-600 to-green-500" : "from-red-600 to-red-500"
-        } rounded-2xl p-8 mb-8 text-white text-center shadow-xl`}>
+        <div className={`bg-linear-to-r ${result.level === "Strong" ? "from-green-600 to-green-500" : result.level === "Improving" ? "from-yellow-500 to-yellow-400" : "from-red-500 to-red-400"
+          } rounded-2xl p-8 mb-8 text-white text-center shadow-xl`}>
 
           <div className="mb-4">
             <div className="w-24 h-24 mx-auto rounded-full bg-white/20 flex items-center justify-center mb-4">
@@ -94,12 +106,38 @@ const QuizResult = () => {
             </div>
 
             <h2 className="text-2xl font-bold mb-2">
-              {result.passed ? "Great Job! 🎉" : "Keep Practicing! 💪"}
+              {result.completed ? "Great Job! 🎉" : "Keep Practicing! 💪"}
             </h2>
 
             <p className="text-lg opacity-90">
               You scored {result.percentage}%
             </p>
+
+            {result.predicted !== null && (
+              <p className="text-lg mt-2 opacity-90">
+                Expected: {result.predicted.toFixed(1)}%
+              </p>
+            )}
+
+            {result.level && (
+              <p className="text-xl mt-3 font-semibold">
+                Status: {result.level === "Strong" ? "🚀 Strong" :
+                  result.level === "Improving" ? "⚠️ Improving" :
+                    "📚 Weak"}
+              </p>
+            )}
+
+            {result.level === "Strong" && (
+              <p className="mt-2">You can move to next topic 🚀</p>
+            )}
+
+            {result.level === "Improving" && (
+              <p className="mt-2">You're improving! Try once more 🔁</p>
+            )}
+
+            {result.level === "Weak" && (
+              <p className="mt-2">Revise this topic again 📚</p>
+            )}
           </div>
         </div>
 
@@ -109,15 +147,13 @@ const QuizResult = () => {
 
           <div className="space-y-4">
             {questions.map((q, index) => (
-              <div key={index} className={`bg-white rounded-xl border-2 p-6 ${
-                q.isCorrect ? "border-green-200" : "border-red-200"
-              }`}>
+              <div key={index} className={`bg-white rounded-xl border-2 p-6 ${q.isCorrect ? "border-green-200" : "border-red-200"
+                }`}>
                 <h3 className="font-semibold text-gray-900 mb-3">{q.question}</h3>
 
                 <div className="space-y-2">
-                  <div className={`p-3 rounded-lg ${
-                    q.isCorrect ? "bg-green-50" : "bg-red-50"
-                  }`}>
+                  <div className={`p-3 rounded-lg ${q.isCorrect ? "bg-green-50" : "bg-red-50"
+                    }`}>
                     <span className="font-medium text-gray-600">Your Answer: </span>
                     <span className={q.isCorrect ? "text-green-700" : "text-red-700"}>
                       {q.userAnswer}

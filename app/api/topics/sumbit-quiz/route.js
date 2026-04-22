@@ -5,11 +5,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import mongoose from "mongoose";
 
-function getLabel(accuracy) {
-  if (accuracy < 40) return { label: "Weak" };
-  if (accuracy < 80) return { label: "Average" };
-  return { label: "Strong" };
-}
 
 export async function POST(req) {
   try {
@@ -48,24 +43,67 @@ export async function POST(req) {
 
     const attempts = last ? last.attempts + 1 : 1;
     const accuracy = total > 0 ? Math.round((score / total) * 100) : 0;
-    const completed = accuracy >= 70;
-    const labelData = getLabel(accuracy);
+
+    // 🔥 Call ML model
+    let predicted = 0;
+
+    try {
+      const mlRes = await fetch("http://localhost:5000/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          attempts: Number(attempts),
+          time_spent: Number(time_spent),
+        }),
+      });
+
+      const mlData = await mlRes.json();
+      predicted = mlData.predicted_accuracy;
+
+    } catch (err) {
+      console.error("ML API Error:", err);
+    }
+
+    let level;
+
+    let completed = false;
+    if (accuracy >= 80) {
+      completed = true;
+      level = "Strong";
+    } else if (accuracy > predicted) {
+      level = "Improving";
+    } else {
+      level = "Weak";
+    }
+
+
 
     await StudentTopicProgress.create({
       studentId: studentObjectId,
-      courseId: courseObjectId, 
-      topicId: topicObjectId,     
+      courseId: courseObjectId,
+      topicId: topicObjectId,
       topicName: topic.title,
-      level: labelData.label,
-      attempts, 
+      attempts,
       score,
       total,
       accuracy,
       completed,
       time_spent: time_spent,
+      predicted_accuracy: predicted,
+      level,
     });
 
-    return Response.json({ success: true, message: "Quiz submitted" });
+
+    return Response.json({
+      success: true,
+      message: "Quiz submitted",
+      accuracy,
+      predicted,
+      level,
+      completed
+    });
 
   } catch (err) {
     console.error("QUIZ SUBMIT ERROR:", err);
