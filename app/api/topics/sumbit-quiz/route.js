@@ -48,7 +48,7 @@ export async function POST(req) {
     let predicted = 0;
 
     try {
-      const mlRes = await fetch("http://localhost:5000/predict", {
+      const mlRes = await fetch(`${process.env.ML_API_URL}/predict`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
