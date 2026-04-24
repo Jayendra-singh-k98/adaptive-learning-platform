@@ -102,7 +102,6 @@ export async function GET(req) {
         completed: p.completed || false,
       };
     });
-    console.log("CHART DATA:", chartData);
 
     return Response.json({
       totalTopics,
