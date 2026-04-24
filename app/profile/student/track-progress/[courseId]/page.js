@@ -207,14 +207,30 @@ function Stat({ icon, label, value, color }) {
 
 function TopicPerformanceCard({ topic, index }) {
     // Calculate performance color
-    const getPerformanceColor = (accuracy) => {
-        if (accuracy >= 80) return { bg: "bg-green-50", text: "text-green-700", border: "border-green-200", gradient: "from-green-500 to-emerald-400" };
-        if (accuracy >= 60) return { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200", gradient: "from-blue-500 to-cyan-400" };
-        if (accuracy >= 40) return { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200", gradient: "from-orange-500 to-yellow-400" };
-        return { bg: "bg-red-50", text: "text-red-700", border: "border-red-200", gradient: "from-red-500 to-rose-400" };
+    const getPerformanceColor = (level) => {
+        if (level === "Strong") return {
+            bg: "bg-green-50",
+            text: "text-green-700",
+            border: "border-green-200",
+            gradient: "from-green-500 to-emerald-400"
+        };
+
+        if (level === "Improving") return {
+            bg: "bg-yellow-50",
+            text: "text-yellow-700",
+            border: "border-yellow-200",
+            gradient: "from-yellow-500 to-orange-400"
+        };
+
+        return {
+            bg: "bg-red-50",
+            text: "text-red-700",
+            border: "border-red-200",
+            gradient: "from-red-500 to-rose-400"
+        };
     };
 
-    const colors = getPerformanceColor(topic.accuracy || 0);
+    const colors = getPerformanceColor(topic.level) ;
 
     return (
         <div className={`p-5 rounded-xl border-2 ${colors.border} ${colors.bg} hover:shadow-md transition-all`}>
@@ -236,6 +252,17 @@ function TopicPerformanceCard({ topic, index }) {
                     </p>
                     <p className="text-xs text-gray-500">
                         {topic.score}/{topic.total}
+                    </p>
+
+                    <p className="text-xs text-gray-500 mt-1">
+                        Expected: {topic.predicted?.toFixed(1)}%
+                    </p>
+
+                    <p className="text-sm font-semibold mt-1">
+                        Status:
+                        {topic.level === "Strong" && " 🚀 Strong"}
+                        {topic.level === "Improving" && " ⚠️ Improving"}
+                        {topic.level === "Weak" && " 📚 Weak"}
                     </p>
                 </div>
             </div>

@@ -91,7 +91,7 @@ export async function POST(req) {
       accuracy,
       completed,
       time_spent: time_spent,
-      predicted_accuracy: predicted,
+      predicted: predicted,
       level,
     });
 

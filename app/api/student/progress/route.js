@@ -35,7 +35,7 @@ export async function GET(req) {
     progress.forEach(p => {
       const key = p.topicId.toString();
 
-      if (!latestMap[key] || latestMap[key].attempts < p.attempts) {
+      if (!latestMap[key] || latestMap[key].createdAt < p.createdAt) {
         latestMap[key] = p;
       }
     });
@@ -88,30 +88,21 @@ export async function GET(req) {
       topicMap[t._id.toString()] = t.title;
     });
 
-    function getLevel(accuracy) {
-      if (accuracy < 40) return { level: 0, label: "Weak" };
-      if (accuracy < 70) return { level: 1, label: "Average" };
-      return { level: 2, label: "Strong" };
-    }
 
-    // ✅ Chart uses ONLY latest attempts
     const chartData = latestProgress.map(p => {
-      const accuracy = p.accuracy || 0;
-
-      const { level, label } = getLevel(accuracy);
-
       return {
         topic: topicMap[p.topicId.toString()] || "Topic",
         score: p.score || 0,
         total: p.total || 0,
         attempts: p.attempts || 0,
-        accuracy,
+        accuracy: p.accuracy || 0,
+        predicted: p.predicted || 0,   // ✅ NEW
         time_spent: p.time_spent || 0,
-        level,
-        label,
+        level: p.level,               // ✅ USE STORED
         completed: p.completed || false,
       };
     });
+    console.log("CHART DATA:", chartData);
 
     return Response.json({
       totalTopics,
@@ -178,7 +169,7 @@ export async function POST(req) {
       const attempts = last ? last.attempts + 1 : 1;
 
       const accuracy = total > 0 ? (score / total) * 100 : 0;
-      const completed = accuracy >= 60;
+      const completed = accuracy >= 80;
 
       await StudentTopicProgress.create({
         studentId: studentObjectId,
